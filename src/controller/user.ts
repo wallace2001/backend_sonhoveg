@@ -31,20 +31,20 @@ class CreateUser{
             // const trx = await knex.transaction();
 
             const emailAlreadyExists = await knex("users").where({
-                email
+                email: String(email).toLowerCase()
             }).select('email').first();
 
             if(emailAlreadyExists)
-                 return res.json({error: "Já existe."});
+                 return res.json({error: "E-mail já cadastrado."});
 
             const data = {
                 name,
-                email,
+                email: String(email).toLowerCase(),
                 telphone,
                 year,
-                sex,
+                sex: sex === '1' ? 'Masculino' : sex === '2' ? 'Feminino' : 'NoN',
                 password: passwordEncripted,
-                admin
+                admin: false
             }
 
 
@@ -73,7 +73,7 @@ class CreateUser{
                  message
              });
 
-            return res.json({createUser, token});
+            return res.json({createUser, token, status: true});
         } catch (error) {
             res.send({error});
         }
@@ -90,14 +90,14 @@ class CreateUser{
             const account = await knex("users").where({
                 email
             }).first();
+            if(!account?.email){
+                res.json({error: "Conta não existe!"});
+            }
 
             if(!account?.confirmAccount){
                 return res.json({error: "Conta não confirmada"});
             }
 
-            if(!account?.email){
-                res.json({error: "Conta não existe!"});
-            }
 
             if(!await bcrypt.compare(password, account?.password)){
                 return res.json({error: "Senha inválida"});

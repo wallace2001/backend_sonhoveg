@@ -10,6 +10,7 @@ export async function up(Knex: KnexProps){
         table.string("sex").nullable();
         table.string("password").nullable();
         table.boolean("confirmAccount").nullable();
+        table.string("cpf").nullable();
         table.boolean("admin").nullable();
     });
 }
