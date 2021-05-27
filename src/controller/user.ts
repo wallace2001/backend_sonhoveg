@@ -17,7 +17,7 @@ class CreateUser{
             name,
             email,
             password,
-            year,
+            date,
             telphone,
             sex,
             admin
@@ -41,7 +41,7 @@ class CreateUser{
                 name,
                 email: String(email).toLowerCase(),
                 telphone,
-                year,
+                year: date,
                 sex: sex === '1' ? 'Masculino' : sex === '2' ? 'Feminino' : 'NoN',
                 password: passwordEncripted,
                 admin: false
