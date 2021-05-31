@@ -12,9 +12,13 @@ interface ProductProps{
     categories_id: string;
 }
 
+interface PropsRequest extends Request{
+    userId: string;
+}
+
 class ProductController{
     
-    async create(req: Request, res: Response){
+    async create(req: PropsRequest, res: Response){
         const {
             name,
             price,
@@ -24,13 +28,26 @@ class ProductController{
             image
         } = req.body;
 
+        const id = req.userId;
+
         try {
+            
             const slug = String(name).toLowerCase().split(" ").join("-");
             const trx = await knex.transaction();
 
+            const user = await trx('users').where('id', id).first();
+            
+            if(!user){
+                return res.send({ error: "Erro ao criar produto." });
+            }
+
+            if(!user.admin){
+                return res.send({ error: "Usuário não identificado como administrador." });
+            }
+
             const categories = await trx("categories")
             .where("id", category)
-            .first()
+            .first();
 
             const idProduct = uuid();
 
@@ -77,8 +94,10 @@ class ProductController{
         }
     }
 
-    async index(req: Request, res: Response){
+    async index(req: PropsRequest, res: Response){
+
         try {
+
             const Milkshakes: ProductProps = await knex("products")
             .join("products_categories", "products.id", "=", "products_categories.products_id")
             .where("categories_id", "03fb9d4c-be86-417d-a24b-34b0d16a6f9b")
@@ -134,7 +153,7 @@ class ProductController{
         }
     }
 
-    async show(req: Request, res: Response){
+    async show(req: PropsRequest, res: Response){
         const {
             slug,
             id
@@ -155,9 +174,9 @@ class ProductController{
         }
     }
 
-    async update(req: Request, res: Response){
+    async update(req: PropsRequest, res: Response){
 
-        const { id } = req.query
+        const id = req.userId;
 
         const {
             name,
@@ -169,6 +188,16 @@ class ProductController{
 
         try {
             const trx = await knex.transaction();
+
+            const user = await trx("users").where('id', id).first();
+
+            if(!user){
+                return res.send({ error: "Usuário não existe no banco de dados." });
+            }
+
+            if(!user.admin){
+                return res.send({ error: "Usuário não identificado como administrador." });
+            }
 
             const product = await trx('products')
             .where('id', String(id))
@@ -199,14 +228,29 @@ class ProductController{
         }
     }
 
-    async destroy(req: Request, res: Response){
-        const { id } = req.query;
+    async destroy(req: PropsRequest, res: Response){
+        const id = req.userId;
 
         try {
-            const destroy = await knex("products")
+
+            const trx = await knex.transaction();
+
+            const user = await trx("users").where('id', id).first();
+
+            if(!user){
+                return res.send({ error: "Usuário não existe no banco de dados." });
+            }
+
+            if(!user.admin){
+                return res.send({ error: "Usuário não identificado como administrador." });
+            }
+
+            const destroy = await trx("products")
             .where('id', String(id))
             .first()
             .delete();
+
+            await trx.commit();
 
             if(!destroy){
                 return res.json({error: "Erro ao deletar produto."});
