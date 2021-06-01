@@ -26,7 +26,7 @@ router.post("/auth/send_email", middlewareLogin, sendEmails.create);
 
 // Payments
 router.get("/auth/payment", paymentsController.index);
-router.post("/auth/payment/notification", paymentsController.show);
+router.get("/auth/payment/notification", paymentsController.show);
 
 // Product
 router.post("/createProduct", productController.create);

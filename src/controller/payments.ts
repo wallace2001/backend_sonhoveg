@@ -7,6 +7,12 @@ MercadoPago.configure({
     access_token: process.env.ACCESS_TOKEN_MERCADO_PAGO,
 });
 
+const getFullUrl = (req: Request) =>{
+    const url = req.protocol + '://' + req.get('host');
+    console.log(url)
+    return url;
+}
+
 interface PropsRequest extends Request{
     userId: string;
 }
@@ -29,12 +35,18 @@ class PaymentsController{
             payer: {
                 email: String(email),
             },
-            external_reference: id
+            external_reference: id,
+            back_urls : {
+                success : getFullUrl(req) + "/payments/success",
+                pending : getFullUrl(req) + "/payments/pending",
+                failure : getFullUrl(req) + "/payments/failure",
+              }
         }
 
         try {
             const payment = await MercadoPago.preferences.create(date);
-            return res.redirect(payment.body.init_point);
+            console.log(payment);
+            return res.redirect(`${payment.body.init_point}`);
         } catch (error) {
             res.send({ error });
         }
