@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import knex from 'knex';
+import { connection as knex } from '../database/connection';
 import { MailerCreate } from '../mail/mailerCreate';
 
 interface PropsRequest extends Request{

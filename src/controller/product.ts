@@ -28,22 +28,22 @@ class ProductController{
             image
         } = req.body;
 
-        const id = req.userId;
+        // const id = req.userId;
 
         try {
             
             const slug = String(name).toLowerCase().split(" ").join("-");
             const trx = await knex.transaction();
 
-            const user = await trx('users').where('id', id).first();
+            // const user = await trx('users').where('id', id).first();
             
-            if(!user){
-                return res.send({ error: "Erro ao criar produto." });
-            }
+            // if(!user){
+            //     return res.send({ error: "Erro ao criar produto." });
+            // }
 
-            if(!user.admin){
-                return res.send({ error: "Usuário não identificado como administrador." });
-            }
+            // if(!user.admin){
+            //     return res.send({ error: "Usuário não identificado como administrador." });
+            // }
 
             const categories = await trx("categories")
             .where("id", category)
@@ -63,19 +63,24 @@ class ProductController{
 
             console.log(slug);
 
-            const createProduct = await trx("products")
-            .insert(data)
+            await trx("products")
+            .insert(data);
 
             const products = await trx("products")
             .where('slug', slug)
-            .first()
+            .first();
 
-            const createManyToMany = await trx("products_categories")
+            console.log(products.id);
+            console.log(categories.id);
+
+            await trx("products_categories")
             .insert({
                 id: uuid(),
                 products_id: products.id,
                 categories_id: categories.id,
             });
+
+            console.log(products);
 
             console.log(idProduct);
 
@@ -100,7 +105,7 @@ class ProductController{
 
             const Milkshakes: ProductProps = await knex("products")
             .join("products_categories", "products.id", "=", "products_categories.products_id")
-            .where("categories_id", "03fb9d4c-be86-417d-a24b-34b0d16a6f9b")
+            .where("categories_id", "d5ae18d0-4332-45e0-92ae-3edb98360d1f")
             .select([
                 "products.id",
                 "products.name",
@@ -114,7 +119,7 @@ class ProductController{
 
             const Cakes: ProductProps = await knex("products")
             .join("products_categories", "products.id", "=", "products_categories.products_id")
-            .where("categories_id", "2c47ced5-5320-4d1f-b6a2-5ddb42697a60")
+            .where("categories_id", "efa6615e-e6e8-4f7c-9cb7-9e72fd3f8ccb")
             .select([
                 "products.id",
                 "products.name",
@@ -128,7 +133,7 @@ class ProductController{
 
             const Donuts: ProductProps = await knex("products")
             .join("products_categories", "products.id", "=", "products_categories.products_id")
-            .where("categories_id", "d0de90f7-a915-4fb0-8a39-9aa051761ed2")
+            .where("categories_id", "b8d73352-fc4f-42d8-9f19-85eb7c584488")
             .select([
                 "products.id",
                 "products.name",
@@ -155,7 +160,6 @@ class ProductController{
 
     async show(req: PropsRequest, res: Response){
         const {
-            slug,
             id
         } = req.query
 
@@ -165,7 +169,6 @@ class ProductController{
             const product = await knex("products")
             .join("products_categories", "products.id", "=", "products_categories.products_id")
             .where("products.id", String(id))
-            .where("products.slug", String(slug))
             .first()
 
             res.json(product);
