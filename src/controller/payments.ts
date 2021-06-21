@@ -2,6 +2,8 @@ import { Request, Response } from "express";
 import paypal from 'paypal-rest-sdk';
 import { connection as knex } from '../database/connection';
 import { v4 as uuid } from "uuid";
+import { io } from '../http';
+import { Socket } from 'socket.io';
 
 const paypalConfig = require('../config/paypal.json');
 
@@ -21,37 +23,116 @@ interface PropsProducts{
 }
 
 class PaymentsController{
+
     async index(req: PropsRequest, res: Response){
     }
 
-    async buy(req: PropsRequest, res: Response){
+    async saveCart(req: PropsRequest, res: Response){
         const { 
-            productId,
-         } = req.query;
+            products
+         } = req.body;
 
-         console.log(productId);
+         console.log(req.userId);
+
+         const id = req.userId;
+
+         try {
+            const user = await knex("users").where("id", id).first();
+            const cartAll = await knex("cart_payments");
+
+            if(cartAll.length !== 0){
+                products.filter(async(item, i) => {
+                    const tes = cartAll[i];
+                    if(tes){
+                        if(item.name === cartAll[i].name){
+                            console.log('Update2');
+                            await knex("cart_payments").where("user_id", id).where("sku", products[i].id).where("name", products[i].name).update({
+                                name: products[i].name,
+                                sku: products[i].id,
+                                price: String(products[i].price),
+                                currency: "BRL",
+                                quantity: String(products[i].quantity)
+                            });
+                        }
+                    }
+                    if(tes === undefined){
+                        console.log('Create');
+                        await knex("cart_payments").insert({
+                        id: uuid(),
+                        user_id: user.id,
+                        name: products[i].name,
+                        sku: products[i].id,
+                        price: String(products[i].price),
+                        currency: "BRL",
+                        quantity: String(products[i].quantity)
+                    });
+                    }
+                })
+            }else{
+                console.log("Create_First");
+                products.forEach(async(product) => {
+                    await knex("cart_payments").insert({
+                        id: uuid(),
+                        user_id: user.id,
+                        name: product.name,
+                        sku: product.id,
+                        price: String(product.price),
+                        currency: "BRL",
+                        quantity: String(product.quantity)
+                    });
+                });
+            }
+
+            return res.send({message: "Carrinho salvado."});
+            
+         } catch (error) {
+             return res.send({error});
+         }
+    }
+
+    async deleteCart(req: PropsRequest, res: Response){
+        const {
+            id
+        } = req.query;
+
+        console.log(id);
 
         try {
-            // const trx = await knex.transaction();
+            await knex("cart_payments").where("sku", String(id)).delete();
+            return res.send({message: "Apagado com sucesso."});
+        } catch (error) {
+            return res.send({error});
+        }
+    }
 
-            const product: PropsProducts = await knex("products").where("id", String(productId)).first();
-            console.log(product);
-            // const user = await trx("users").where("id", req.userId).first();
+    async buy(req: PropsRequest, res: Response){
+        const { id } = req.query;
+        console.log(id);
 
-            // if(!user){
-            //     return res.send({ error: "Usuário não existe." });
-            // }
+        try {
+            const user = await knex("users").where("id", String(id)).first();
+            
+            if(!user){
+                return res.send({error: "Usuário não encontrado."});
+            }
 
-            const cart = [{
-                name: product.title,
-                sku: product.id,
-                price: product.price,
-                currency: "BRL",
-                quantity: 1
-            }];
+            const items = await knex("cart_payments")
+            .where("user_id", String(id))
+            .select([
+                "cart_payments.name",
+                "cart_payments.sku",
+                "cart_payments.price",
+                "cart_payments.currency",
+                "cart_payments.quantity",
+            ]);
 
-            const value = { currency: "BRL", total: 40};
-            const description = product.description;
+            let priceFinal = 0;
+
+            items.forEach(item => {
+                priceFinal = priceFinal + Number(item.price);
+            });
+
+            console.log(priceFinal);
 
             const create_payment_json: any = {
                 "intent": "sale",
@@ -59,7 +140,7 @@ class PaymentsController{
                     "payment_method": "paypal"
                 },
                 "redirect_urls": {
-                    "return_url": "http://localhost:3002/auth/payment/success",
+                    "return_url": `http://localhost:3002/auth/payment/success?id=${id}`,
                     "cancel_url": "http://localhost:3002/auth/payment/cancel"
                 },
                 "transactions": [{
@@ -67,14 +148,14 @@ class PaymentsController{
                         "items": [{
                             "name": "item",
                             "sku": "item",
-                            "price": "1.00",
+                            "price": parseFloat(String(priceFinal)),
                             "currency": "BRL",
                             "quantity": 1
                         }]
                     },
                     "amount": {
                         "currency": "BRL",
-                        "total": "1.00"
+                        "total": parseFloat(String(priceFinal))
                     },
                     "description": "This is the payment description."
                 }]
@@ -89,113 +170,144 @@ class PaymentsController{
                     })
                 }
             })
-
-            // await trx.commit;
         } catch (error) {
             res.send({ error });
         }
     }
 
     async success(req: PropsRequest, res: Response){
-        const { PayerID, paymentId } = req.query;
-        const value = {
-            "currency": "BRL",
-            "total": "40.00",
-        }
+        const { PayerID, paymentId, id } = req.query;
+        try {
 
-        const execute_payment_json: any = {
-            "payer_id": PayerID,
-            "transactions": [{
-                "amount": {
-                    "currency": "BRL",
-                    "total": "1.00"
-                }
-            }]
-        };
+            const items = await knex("cart_payments")
+            .where("user_id", String(id))
+            .select([
+                "cart_payments.name",
+                "cart_payments.sku",
+                "cart_payments.price",
+                "cart_payments.currency",
+                "cart_payments.quantity",
+            ]);
 
-        paypal.payment.execute(String(paymentId), execute_payment_json, async (err, payment: any) => {
-            if(err){
-                return res.send({ err });
-            }else{
-                const payments = {
-                    "id": payment.id,
-                    "user_id": 1,
-                    "intent": payment.intent,
-                    "state": payment.state,
-                    "cart": payment.cart,
-                    "payer": {
-                        "payment_method": payment.payer.payment_method,
-                        "status": payment.payer.status,
-                        "payer_info": {
-                          "email": payment.payer.payer_info,
-                          "first_name": payment.payer.payer_info.first_name,
-                          "last_name": payment.payer.payer_info.last_name,
-                          "payer_id": payment.payer.payer_info.payer_id,
-                          "shipping_address": {
-                            "recipient_name": payment.payer.payer_info.shipping_address.recipient_name,
-                            "line1": payment.payer.payer_info.shipping_address.line1,
-                            "city": payment.payer.payer_info.shipping_address.city,
-                            "state": payment.payer.payer_info.shipping_address.state,
-                            "postal_code": payment.payer.payer_info.shipping_address.postal_code,
-                            "country_code": payment.payer.payer_info.shipping_address.country_code,
-                            "normalization_status": payment.payer.payer_info.shipping_address.normalization_status
-                          },
-                          "tax_id_type": payment.payer.tax_id_type,
-                          "tax_id": payment.payer.tax_id,
-                          "country_code": payment.payer.country_code
-                        }
-                      },
-                    "transactions": [{
-                        "amount": {
-                            "total": payment.transactions[0].amount.total,
-                            "currency": payment.transactions[0].amount.currency,
-                            "details": {
-                              "subtotal": payment.transactions[0].amount.details.subtotal,
-                              "shipping": payment.transactions[0].amount.details.shipping,
-                              "insurance": payment.transactions[0].amount.details.insurance,
-                              "handling_fee": payment.transactions[0].amount.details.handling_fee,
-                              "shipping_discount": payment.transactions[0].amount.details.shipping_discount,
-                              "discount": payment.transactions[0].amount.details.discount
+            let priceFinal = 0;
+
+            items.forEach(item => {
+                priceFinal += Number(item.price);
+            });
+
+
+            const execute_payment_json: any = {
+                "payer_id": PayerID,
+                "transactions": [{
+                    "amount": {
+                        "currency": "BRL",
+                        "total": parseFloat(String(priceFinal))
+                    }
+                }]
+            };
+    
+            paypal.payment.execute(String(paymentId), execute_payment_json, async (err, payment: any) => {
+                if(err){
+                    return res.send({ err });
+                }else{
+                    // return res.send(payment);
+                    const payments = await {
+                        "id": payment?.id,
+                        "user_id": String(id),
+                        "intent": payment?.intent,
+                        "state": payment?.state,
+                        "cart": payment?.cart,
+                        "payer": {
+                            "payment_method": payment?.payer.payment_method,
+                            "status": payment?.payer.status,
+                            "payer_info": {
+                              "email": payment?.payer.payer_info,
+                              "first_name": payment?.payer.payer_info.first_name,
+                              "last_name": payment?.payer.payer_info.last_name,
+                              "payer_id": payment?.payer.payer_info.payer_id,
+                              "shipping_address": {
+                                "recipient_name": payment?.payer.payer_info.shipping_address.recipient_name,
+                                "line1": payment?.payer.payer_info.shipping_address.line1,
+                                "city": payment?.payer.payer_info.shipping_address.city,
+                                "state": payment?.payer.payer_info.shipping_address.state,
+                                "postal_code": payment?.payer.payer_info.shipping_address.postal_code,
+                                "country_code": payment?.payer.payer_info.shipping_address.country_code,
+                                "normalization_status": payment?.payer.payer_info.shipping_address.normalization_status
+                              },
+                              "tax_id_type": payment?.payer.tax_id_type,
+                              "tax_id": payment?.payer.tax_id,
+                              "country_code": payment?.payer.country_code
                             }
-                        }
-                    }],
-                    "create_time": payment.create_time,
-                    "update_time": payment.update_time,
+                          },
+                        "transactions": [{
+                            "amount": {
+                                "total": payment?.transactions[0].amount.total,
+                                "currency": payment?.transactions[0].amount.currency,
+                                "details": {
+                                  "subtotal": payment?.transactions[0].amount.details.subtotal,
+                                  "shipping": payment?.transactions[0].amount.details.shipping,
+                                  "insurance": payment?.transactions[0].amount.details.insurance,
+                                  "handling_fee": payment?.transactions[0].amount.details.handling_fee,
+                                  "shipping_discount": payment?.transactions[0].amount.details.shipping_discount,
+                                  "discount": payment?.transactions[0].amount.details.discount
+                                }
+                            }
+                        }],
+                        "create_time": payment?.create_time,
+                        "update_time": payment?.update_time,
+                    }
+    
+                    const save = {
+                        "id": payments.id,
+                        "user_id": payments.user_id,
+                        "intent": payments.intent,
+                        "state": payments.state,
+                        "cart": payments.cart,
+                        "status": "pendente",
+                        "payer": JSON.stringify(payments.payer),
+                        "transactions": JSON.stringify(payments.transactions),
+                        "create_time": payments.create_time,
+                        "update_time": payments.update_time,
+                    }
+                    if(!await knex("payments").where("id", payment?.id).first()){
+                        await knex("payments").insert(save);
+                    }
+                    const ts = await knex("payments").where("id", payment?.id).first();
+                    const fs = {
+                        "id": ts.id,
+                        "user_id": ts.user_id,
+                        "intent": ts.intent,
+                        "state": ts.state,
+                        "status": ts.status,
+                        "cart": ts.cart,
+                        "payer": JSON.parse(ts.payer),
+                        "transactions": JSON.parse(ts.transactions),
+                        "create_time": ts.create_time,
+                        "update_time": ts.update_time,
+                    }
+                    
+                    io.emit('newRequest', fs);
+                    return res.send({ fs });
+                    //console.log(payment);
                 }
-
-                // const save = {
-                //     "id": payments.id,
-                //     "user_id": 1,
-                //     "intent": payments.intent,
-                //     "state": payments.state,
-                //     "cart": payments.cart,
-                //     "payer": JSON.stringify(payments.payer),
-                //     "transactions": JSON.stringify(payments.transactions),
-                //     "create_time": payments.create_time,
-                //     "update_time": payments.update_time,
-                // }
-                // await knex("payments").insert(save);
-                const ts = await knex("payments").where("id", String("PAYID-MC3JV3Y3H624800CL033782T")).first();
-                const fs = {
-                    "id": ts.id,
-                    "user_id": 1,
-                    "intent": ts.intent,
-                    "state": ts.state,
-                    "cart": ts.cart,
-                    "payer": JSON.parse(ts.payer),
-                    "transactions": JSON.parse(ts.transactions),
-                    "create_time": ts.create_time,
-                    "update_time": ts.update_time,
-                }
-
-                return res.send({ fs });
-                //console.log(payment);
-            }
-        })
+            });
+        } catch (error) {
+            return res.send({error});
+        }
     }
 
     async cancel(req: PropsRequest, res: Response){
         res.json({message: "Ok"});
+    }
+
+    async payments(req: PropsRequest, res: Response){
+        try {
+            const request = await knex("payments");
+
+            return res.send(request);
+        } catch (error) {
+            return res.send({error});
+        }
     }
 }
 

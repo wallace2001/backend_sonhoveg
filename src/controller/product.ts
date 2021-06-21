@@ -16,6 +16,7 @@ interface PropsRequest extends Request{
     userId: string;
 }
 
+
 class ProductController{
     
     async create(req: PropsRequest, res: Response){
@@ -28,22 +29,11 @@ class ProductController{
             image
         } = req.body;
 
-        // const id = req.userId;
 
         try {
             
             const slug = String(name).toLowerCase().split(" ").join("-");
             const trx = await knex.transaction();
-
-            // const user = await trx('users').where('id', id).first();
-            
-            // if(!user){
-            //     return res.send({ error: "Erro ao criar produto." });
-            // }
-
-            // if(!user.admin){
-            //     return res.send({ error: "Usuário não identificado como administrador." });
-            // }
 
             const categories = await trx("categories")
             .where("id", category)
@@ -56,9 +46,10 @@ class ProductController{
                 name,
                 price,
                 slug,
+                quantity: 1,
                 description,
                 calories,
-                image: "https://images.unsplash.com/photo-1551024601-bec78aea704b?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=700&q=80"
+                image: `http://localhost:3002/uploads/${req.file.filename}`
             }
 
             console.log(slug);
@@ -93,7 +84,7 @@ class ProductController{
 
             await trx.commit();
 
-            res.json(productComplete);
+            res.json({message: "Produto criado com sucesso."});
         } catch (error) {
             res.json({error});
         }
@@ -105,12 +96,13 @@ class ProductController{
 
             const Milkshakes: ProductProps = await knex("products")
             .join("products_categories", "products.id", "=", "products_categories.products_id")
-            .where("categories_id", "d5ae18d0-4332-45e0-92ae-3edb98360d1f")
+            .where("categories_id", "be774f57-9f39-4fa2-8c58-0df7b74956e5")
             .select([
                 "products.id",
                 "products.name",
                 "products.description",
                 "products.slug",
+                "products.quantity",
                 "products.price",
                 "products.calories",
                 "products.image",
@@ -119,13 +111,14 @@ class ProductController{
 
             const Cakes: ProductProps = await knex("products")
             .join("products_categories", "products.id", "=", "products_categories.products_id")
-            .where("categories_id", "efa6615e-e6e8-4f7c-9cb7-9e72fd3f8ccb")
+            .where("categories_id", "095c5b42-988c-403a-8fec-b762fe8a3136")
             .select([
                 "products.id",
                 "products.name",
                 "products.slug",
                 "products.description",
                 "products.price",
+                "products.quantity",
                 "products.calories",
                 "products.image",
                 "categories_id"
@@ -133,13 +126,14 @@ class ProductController{
 
             const Donuts: ProductProps = await knex("products")
             .join("products_categories", "products.id", "=", "products_categories.products_id")
-            .where("categories_id", "b8d73352-fc4f-42d8-9f19-85eb7c584488")
+            .where("categories_id", "6d9f7ff4-6cd4-4b1f-89ce-e72bf1d647f8")
             .select([
                 "products.id",
                 "products.name",
                 "products.slug",
                 "products.description",
                 "products.price",
+                "products.quantity",
                 "products.calories",
                 "products.image",
                 "categories_id"
@@ -153,6 +147,31 @@ class ProductController{
 
 
             res.json(data);
+        } catch (error) {
+            res.json({error});
+        }
+    }
+    
+    async products(req: PropsRequest, res: Response){
+
+        try {
+
+            const products: ProductProps = await knex("products")
+            .join("products_categories", "products.id", "=", "products_categories.products_id")
+            // .where("categories_id", "be774f57-9f39-4fa2-8c58-0df7b74956e5")
+            .select([
+                "products.id",
+                "products.name",
+                "products.description",
+                "products.slug",
+                "products.quantity",
+                "products.price",
+                "products.calories",
+                "products.image",
+                "categories_id"
+            ]);
+
+            res.json(products);
         } catch (error) {
             res.json({error});
         }

@@ -7,6 +7,7 @@ export async function up(Knex: KnexProps){
         table.string("slug").nullable().unique(),
         table.string("description").nullable(),
         table.string("price").nullable(),
+        table.string("quantity").nullable(),
         table.string("calories").nullable(),
         table.string("image").nullable()
     })

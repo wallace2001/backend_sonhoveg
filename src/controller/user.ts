@@ -11,6 +11,10 @@ const generateToken = (params = {}) => {
     })
 }
 
+interface ReqProps extends Request{
+    userId: string;
+}
+
 class CreateUser{
     async create(req: Request, res: Response){
         const {
@@ -138,21 +142,38 @@ class CreateUser{
         }
     }
 
-    async user (req: any, res: Response){
-        const user = await knex("users").where("id", req.userId).first();
-        res.json({
-            ok : true, 
-            name: user.name, 
-            email: user.email,
-            admin: user.admin,
-            sex: user.sex,
-            telphone: user.telphone
-        });
+    async user (req: ReqProps, res: Response){
+        
+        try {
+            const user = await knex("users").where("id", req.userId).first();
+
+            res.json({
+                ok : true,
+                id: user.id,
+                name: user.name, 
+                email: user.email,
+                admin: user.admin,
+                sex: user.sex,
+                telphone: user.telphone
+            });
+            
+        } catch (error) {
+            return res.send({error});   
+        }
+    }
+
+    async listUser(req: ReqProps, res: Response){
+        const user = await knex("users");
+        try {
+            return res.send(user);
+        } catch (error) {
+            return res.send({error});
+        }
     }
 
     //refatorar de acordo com a necessidade do frontEnd
 
-    async change(req: any, res: Response){
+    async change(req: ReqProps, res: Response){
 
         const user = await knex("users")
         .where('id', String(req.userId))
