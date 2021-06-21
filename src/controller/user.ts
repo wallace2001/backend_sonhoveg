@@ -69,7 +69,7 @@ class CreateUser{
                 text: "Clique no botão abaixo",
                 html: `
                     <h2>Olá ${name}, Para continuar no site é preciso que você confirme sua conta.</h2>
-                    <a href=http://localhost:3002/confirmaccout/id=${idUserNow.id}&token=${token}>Confirmar conta</a>
+                    <a href=${process.env.API_URL_PRODUCTION}/confirmaccout/id=${idUserNow.id}&token=${token}>Confirmar conta</a>
                 `
             }
 
@@ -193,7 +193,7 @@ class CreateUser{
                 text: "Clique no botão abaixo",
                 html: `
                     <h2>Olá ${user.name}, Clique no botão para mudar sua senha.</h2>
-                    <a href=http://localhost:3002/change_password/${user.id}>Mudar senha</a>
+                    <a href=${process.env.API_URL_PRODUCTION}/change_password/${user.id}>Mudar senha</a>
                 `
             };
 
@@ -282,7 +282,7 @@ class CreateUser{
                 html: `
                     <h2>Olá ${user.name}.</h2>
                     <h4>Clique no botão abaixo para mudar sua senha.</h4>
-                    <a href=http://localhost:3002/change_password/${user.id}>Mudar senha</a>
+                    <a href=${process.env.API_URL_PRODUCTION}/change_password/${user.id}>Mudar senha</a>
                 `
             };
 
