@@ -199,6 +199,7 @@ class ProductController{
     async update(req: PropsRequest, res: Response){
 
         const id = req.userId;
+        const { idProduct } = req.params;
 
         const {
             name,
@@ -226,7 +227,7 @@ class ProductController{
             .first();
 
             const productUpdate = await trx('products')
-            .where('id', String(id))
+            .where('id', String(idProduct))
             .first()
             .update({
                 'name': name ? name : product.name,
@@ -234,7 +235,7 @@ class ProductController{
                 'price': price ? price : product.price,
                 'slug': name ? String(name).toLowerCase().split(" ").join("-") : product.slug,
                 'calories': calories ? calories : product.calories,
-                'image': image ? image : product.image
+                'image': image ? image : `${process.env.API_URL_PRODUCTION}uploads/${req.file.filename}`
             });
 
             const productAfter = await trx('products')
@@ -252,7 +253,7 @@ class ProductController{
 
     async destroy(req: PropsRequest, res: Response){
         const id = req.userId;
-
+        const { idProduct } = req.params;
         try {
 
             const trx = await knex.transaction();
@@ -268,7 +269,7 @@ class ProductController{
             }
 
             const destroy = await trx("products")
-            .where('id', String(id))
+            .where('id', String(idProduct))
             .first()
             .delete();
 

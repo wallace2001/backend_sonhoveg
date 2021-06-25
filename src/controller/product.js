@@ -70,7 +70,7 @@ var ProductController = /** @class */ (function () {
                             quantity: 1,
                             description: description,
                             calories: calories,
-                            image: process.env.API_URL_PRODUCTION + "/uploads/" + req.file.filename
+                            image: process.env.API_URL_PRODUCTION + "uploads/" + req.file.filename
                         };
                         console.log(slug);
                         return [4 /*yield*/, trx("products")
@@ -250,11 +250,12 @@ var ProductController = /** @class */ (function () {
     };
     ProductController.prototype.update = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var id, _a, name, description, price, calories, image, trx, user, product, productUpdate, productAfter, error_5;
+            var id, idProduct, _a, name, description, price, calories, image, trx, user, product, productUpdate, productAfter, error_5;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
                         id = req.userId;
+                        idProduct = req.params.idProduct;
                         _a = req.body, name = _a.name, description = _a.description, price = _a.price, calories = _a.calories, image = _a.image;
                         _b.label = 1;
                     case 1:
@@ -277,7 +278,7 @@ var ProductController = /** @class */ (function () {
                     case 4:
                         product = _b.sent();
                         return [4 /*yield*/, trx('products')
-                                .where('id', String(id))
+                                .where('id', String(idProduct))
                                 .first()
                                 .update({
                                 'name': name ? name : product.name,
@@ -285,7 +286,7 @@ var ProductController = /** @class */ (function () {
                                 'price': price ? price : product.price,
                                 'slug': name ? String(name).toLowerCase().split(" ").join("-") : product.slug,
                                 'calories': calories ? calories : product.calories,
-                                'image': image ? image : product.image
+                                'image': image ? image : process.env.API_URL_PRODUCTION + "uploads/" + req.file.filename
                             })];
                     case 5:
                         productUpdate = _b.sent();
@@ -309,11 +310,12 @@ var ProductController = /** @class */ (function () {
     };
     ProductController.prototype.destroy = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var id, trx, user, destroy, error_6;
+            var id, idProduct, trx, user, destroy, error_6;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         id = req.userId;
+                        idProduct = req.params.idProduct;
                         _a.label = 1;
                     case 1:
                         _a.trys.push([1, 6, , 7]);
@@ -330,7 +332,7 @@ var ProductController = /** @class */ (function () {
                             return [2 /*return*/, res.send({ error: "Usuário não identificado como administrador." })];
                         }
                         return [4 /*yield*/, trx("products")
-                                .where('id', String(id))
+                                .where('id', String(idProduct))
                                 .first()
                                 .delete()];
                     case 4:

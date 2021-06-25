@@ -211,8 +211,8 @@ var PaymentsController = /** @class */ (function () {
                                 "payment_method": "paypal"
                             },
                             "redirect_urls": {
-                                "return_url": process.env.API_URL_LOCAL + "/auth/payment/success?id=" + id,
-                                "cancel_url": process.env.API_URL_LOCAL + "/auth/payment/cancel"
+                                "return_url": process.env.API_URL_PRODUCTION + "/auth/payment/success?id=" + id,
+                                "cancel_url": process.env.API_URL_PRODUCTION + "/auth/payment/cancel"
                             },
                             "transactions": [{
                                     "item_list": {
@@ -392,7 +392,7 @@ var PaymentsController = /** @class */ (function () {
                                             "update_time": ts.update_time,
                                         };
                                         http_1.io.emit('newRequest', fs);
-                                        return [2 /*return*/, res.redirect("http://localhost:3000/payment_success/" + fs.id)];
+                                        return [2 /*return*/, res.redirect(process.env.API_URL_DOMAIN + "payment_success/" + fs.id)];
                                 }
                             });
                         }); });
@@ -408,6 +408,7 @@ var PaymentsController = /** @class */ (function () {
     PaymentsController.prototype.cancel = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
+                res.redirect("" + process.env.API_URL_DOMAIN);
                 res.json({ message: "Ok" });
                 return [2 /*return*/];
             });

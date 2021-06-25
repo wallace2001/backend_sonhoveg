@@ -46,5 +46,5 @@ router.post("/auth/createProduct", middlewareLogin, upload.single('file'), produ
 router.get("/product", productController.show);
 router.get("/products", productController.index);
 router.get("/productsall", productController.products);
-router.patch("/products_update", productController.update);
-router.delete("/products_delete", productController.destroy);
+router.patch("/products_update/:idProduct", productController.update);
+router.delete("/products_delete/:idProduct", productController.destroy);
