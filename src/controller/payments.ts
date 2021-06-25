@@ -135,8 +135,8 @@ class PaymentsController{
                     "payment_method": "paypal"
                 },
                 "redirect_urls": {
-                    "return_url": `${process.env.API_URL_LOCAL}/auth/payment/success?id=${id}`,
-                    "cancel_url": `${process.env.API_URL_LOCAL}/auth/payment/cancel`
+                    "return_url": `${process.env.API_URL_PRODUCTION}/auth/payment/success?id=${id}`,
+                    "cancel_url": `${process.env.API_URL_PRODUCTION}/auth/payment/cancel`
                 },
                 "transactions": [{
                     "item_list": {
@@ -292,7 +292,7 @@ class PaymentsController{
                     }
                     
                     io.emit('newRequest', fs);
-                    return res.redirect(`http://localhost:3000/payment_success/${fs.id}`);
+                    return res.redirect(`${process.env.API_URL_DOMAIN}payment_success/${fs.id}`);
                 }
             });
         } catch (error) {
@@ -301,6 +301,7 @@ class PaymentsController{
     }
 
     async cancel(req: PropsRequest, res: Response){
+        res.redirect(`${process.env.API_URL_DOMAIN}`);
         res.json({message: "Ok"});
     }
 
