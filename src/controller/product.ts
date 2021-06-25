@@ -49,7 +49,7 @@ class ProductController{
                 quantity: 1,
                 description,
                 calories,
-                image: `${process.env.API_URL_PRODUCTION}/uploads/${req.file.filename}`
+                image: `${process.env.API_URL_PRODUCTION}uploads/${req.file.filename}`
             }
 
             console.log(slug);
