@@ -22,9 +22,9 @@ router.post("/loginUser", createUser.index);
 router.get("/auth/user", middlewareLogin, createUser.user);
 router.get("/confirmaccout/id:id&token:token", createUser.showConfirm);
 router.get("/change", middlewareLogin, createUser.change);
-router.get("/change_password/:id", createUser.changePassword);
-router.post("/account_recuperation", createUser.accountRecuperation);
-router.post("/change_pass", createUser.changePass);
+router.get("/change_password/:id", middlewareLogin, createUser.changePassword);
+router.post("/account_recuperation", middlewareLogin, createUser.accountRecuperation);
+router.post("/change_pass", middlewareLogin, createUser.changePass);
 router.get("/auth/userList", middlewareLogin, createUser.listUser);
 
 // Send E-mails
@@ -33,12 +33,12 @@ router.post("/auth/sendEmail", middlewareLogin, sendEmails.sendEmail);
 
 // Payments
 router.get("/auth/payment", paymentsController.index);
-router.get("/auth/payment/buy", paymentsController.buy);
+router.get("/auth/payment/buy", middlewareLogin, paymentsController.buy);
 router.post("/auth/payment/save_cart", middlewareLogin, paymentsController.saveCart);
 router.get("/auth/payment/delete_cart", middlewareLogin, paymentsController.deleteCart);
 router.get("/auth/payment/success", paymentsController.success);
 router.get("/auth/payment/cancel", paymentsController.cancel);
-router.get("/auth/payment/request", paymentsController.payments);
+router.get("/auth/payment/request", middlewareLogin, paymentsController.payments);
 router.get("/auth/payment/userpayments", middlewareLogin, paymentsController.userPayment);
 
 // Product
@@ -46,7 +46,7 @@ router.post("/auth/createProduct", middlewareLogin, upload.single('file'), produ
 router.get("/product", productController.show);
 router.get("/products", productController.index);
 router.get("/productsall", productController.products);
-router.patch("/products_update/:idProduct", productController.update);
-router.delete("/products_delete/:idProduct", productController.destroy);
+router.patch("/products_update/:idProduct", middlewareLogin, upload.single('file'), productController.update);
+router.delete("/products_delete/:idProduct", middlewareLogin, productController.destroy);
 
 export { router }
