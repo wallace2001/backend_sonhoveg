@@ -122,21 +122,19 @@ class CreateUser{
             token
         } = req.params
 
-        // console.log(id.substring(1), token.substring(1));
-
         try {
 
             const user = await knex("users").where("id", id.substring(1)).first();
 
             if(user.confirmAccount){
-                return res.redirect('http://localhost:3000/confirmaccout/1')
+                return res.redirect('http://localhost:3000/')
             }
             
-            const userConfirmed = await knex("users").where("id", id.substring(1)).update({
+            await knex("users").where("id", id.substring(1)).update({
                 confirmAccount: true
             });
 
-            return res.redirect('http://localhost:3000/confirmaccout/0');
+            return res.redirect('http://localhost:3000/');
         } catch (error) {
             console.log({ error });
         }
@@ -170,8 +168,6 @@ class CreateUser{
             return res.send({error});
         }
     }
-
-    //refatorar de acordo com a necessidade do frontEnd
 
     async change(req: ReqProps, res: Response){
 
@@ -295,7 +291,6 @@ class CreateUser{
         }
     }
 
-    //refatoração até aqui...
 }
 
 export { CreateUser }

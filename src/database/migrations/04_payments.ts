@@ -8,6 +8,8 @@ export async function up(Knex: KnexProps){
         table.string("state");
         table.string("cart");
         table.string("payer");
+        table.string("status");
+        table.date("date");
         table.string("transactions");
         table.date("create_time");
         table.date("update_time");

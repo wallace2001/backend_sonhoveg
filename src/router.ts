@@ -39,6 +39,7 @@ router.get("/auth/payment/delete_cart", middlewareLogin, paymentsController.dele
 router.get("/auth/payment/success", paymentsController.success);
 router.get("/auth/payment/cancel", paymentsController.cancel);
 router.get("/auth/payment/request", paymentsController.payments);
+router.get("/auth/payment/userpayments", middlewareLogin, paymentsController.userPayment);
 
 // Product
 router.post("/auth/createProduct", middlewareLogin, upload.single('file'), productController.create);

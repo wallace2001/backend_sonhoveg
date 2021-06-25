@@ -14,14 +14,6 @@ interface PropsRequest extends Request{
     userId: string;
 }
 
-interface PropsProducts{
-    id: string;
-    title: string;
-    price: string;
-    description: string;
-    calories: string;
-}
-
 class PaymentsController{
 
     async index(req: PropsRequest, res: Response){
@@ -29,7 +21,8 @@ class PaymentsController{
 
     async saveCart(req: PropsRequest, res: Response){
         const { 
-            products
+            products,
+            date
          } = req.body;
 
          console.log(req.userId);
@@ -49,7 +42,8 @@ class PaymentsController{
                             await knex("cart_payments").where("user_id", id).where("sku", products[i].id).where("name", products[i].name).update({
                                 name: products[i].name,
                                 sku: products[i].id,
-                                price: String(products[i].price),
+                                price: String(Number(products[i].price)),
+                                date: date,
                                 currency: "BRL",
                                 quantity: String(products[i].quantity)
                             });
@@ -62,7 +56,8 @@ class PaymentsController{
                         user_id: user.id,
                         name: products[i].name,
                         sku: products[i].id,
-                        price: String(products[i].price),
+                        price: String(Number(products[i].price)),
+                        date: date,
                         currency: "BRL",
                         quantity: String(products[i].quantity)
                     });
@@ -76,7 +71,8 @@ class PaymentsController{
                         user_id: user.id,
                         name: product.name,
                         sku: product.id,
-                        price: String(product.price),
+                        price: String(Number(product.price)),
+                        date: date,
                         currency: "BRL",
                         quantity: String(product.quantity)
                     });
@@ -122,17 +118,16 @@ class PaymentsController{
                 "cart_payments.name",
                 "cart_payments.sku",
                 "cart_payments.price",
+                "cart_payments.date",
                 "cart_payments.currency",
                 "cart_payments.quantity",
             ]);
 
             let priceFinal = 0;
-
             items.forEach(item => {
-                priceFinal = priceFinal + Number(item.price);
+                priceFinal = Number(Number(priceFinal) + Number(item.price));
             });
-
-            console.log(priceFinal);
+            const price = priceFinal.toFixed(2);
 
             const create_payment_json: any = {
                 "intent": "sale",
@@ -140,22 +135,22 @@ class PaymentsController{
                     "payment_method": "paypal"
                 },
                 "redirect_urls": {
-                    "return_url": `${process.env.API_URL_PRODUCTION}/auth/payment/success?id=${id}`,
-                    "cancel_url": `${process.env.API_URL_PRODUCTION}/auth/payment/cancel`
+                    "return_url": `${process.env.API_URL_LOCAL}/auth/payment/success?id=${id}`,
+                    "cancel_url": `${process.env.API_URL_LOCAL}/auth/payment/cancel`
                 },
                 "transactions": [{
                     "item_list": {
                         "items": [{
                             "name": "item",
                             "sku": "item",
-                            "price": parseFloat(String(priceFinal)),
+                            "price": parseFloat(price),
                             "currency": "BRL",
                             "quantity": 1
                         }]
                     },
                     "amount": {
                         "currency": "BRL",
-                        "total": parseFloat(String(priceFinal))
+                        "total": parseFloat(price)
                     },
                     "description": "This is the payment description."
                 }]
@@ -185,15 +180,18 @@ class PaymentsController{
                 "cart_payments.name",
                 "cart_payments.sku",
                 "cart_payments.price",
+                "cart_payments.date",
                 "cart_payments.currency",
                 "cart_payments.quantity",
             ]);
 
-            let priceFinal = 0;
+            const user = await knex("users").where("id", String(id)).first();
 
+            let priceFinal = 0;
             items.forEach(item => {
-                priceFinal += Number(item.price);
+                priceFinal = Number(Number(priceFinal) + Number(item.price));
             });
+            const price = priceFinal.toFixed(2);
 
 
             const execute_payment_json: any = {
@@ -201,7 +199,7 @@ class PaymentsController{
                 "transactions": [{
                     "amount": {
                         "currency": "BRL",
-                        "total": parseFloat(String(priceFinal))
+                        "total": parseFloat(price)
                     }
                 }]
             };
@@ -210,7 +208,7 @@ class PaymentsController{
                 if(err){
                     return res.send({ err });
                 }else{
-                    // return res.send(payment);
+                    const itemsName = items.filter(item => ({name: item.name}));
                     const payments = await {
                         "id": payment?.id,
                         "user_id": String(id),
@@ -253,6 +251,7 @@ class PaymentsController{
                                 }
                             }
                         }],
+                        "date": items[0].date,
                         "create_time": payment?.create_time,
                         "update_time": payment?.update_time,
                     }
@@ -264,8 +263,11 @@ class PaymentsController{
                         "state": payments.state,
                         "cart": payments.cart,
                         "status": "pendente",
+                        "date": payments.date,
                         "payer": JSON.stringify(payments.payer),
                         "transactions": JSON.stringify(payments.transactions),
+                        "telphone": user.telphone,
+                        "products": JSON.stringify(itemsName),
                         "create_time": payments.create_time,
                         "update_time": payments.update_time,
                     }
@@ -279,7 +281,10 @@ class PaymentsController{
                         "intent": ts.intent,
                         "state": ts.state,
                         "status": ts.status,
+                        "date": ts.date,
+                        "products": ts.products,
                         "cart": ts.cart,
+                        "telphone": user.telphone,
                         "payer": JSON.parse(ts.payer),
                         "transactions": JSON.parse(ts.transactions),
                         "create_time": ts.create_time,
@@ -287,8 +292,7 @@ class PaymentsController{
                     }
                     
                     io.emit('newRequest', fs);
-                    return res.send({ fs });
-                    //console.log(payment);
+                    return res.redirect(`http://localhost:3000/payment_success/${fs.id}`);
                 }
             });
         } catch (error) {
@@ -307,6 +311,16 @@ class PaymentsController{
             return res.send(request);
         } catch (error) {
             return res.send({error});
+        }
+    }
+
+    async userPayment(req: PropsRequest, res: Response){
+        const id = req.userId;
+        try {
+            const userPayments = await knex("payments").where("user_id", String(id));
+            return res.send(userPayments);
+        } catch (error) {
+            return res.send({ error });
         }
     }
 }
