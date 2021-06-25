@@ -254,6 +254,7 @@ class ProductController{
     async destroy(req: PropsRequest, res: Response){
         const id = req.userId;
         const { idProduct } = req.params;
+        console.log(idProduct);
         try {
 
             const trx = await knex.transaction();

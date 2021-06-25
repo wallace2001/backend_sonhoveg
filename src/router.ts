@@ -46,7 +46,7 @@ router.post("/auth/createProduct", middlewareLogin, upload.single('file'), produ
 router.get("/product", productController.show);
 router.get("/products", productController.index);
 router.get("/productsall", productController.products);
-router.patch("/products_update/:idProduct", middlewareLogin, upload.single('file'), productController.update);
-router.delete("/products_delete/:idProduct", middlewareLogin, productController.destroy);
+router.patch("/auth/products_update/:idProduct", middlewareLogin, upload.single('file'), productController.update);
+router.delete("/auth/products_delete/:idProduct", middlewareLogin, productController.destroy);
 
 export { router }

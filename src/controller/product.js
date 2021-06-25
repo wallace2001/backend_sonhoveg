@@ -316,6 +316,7 @@ var ProductController = /** @class */ (function () {
                     case 0:
                         id = req.userId;
                         idProduct = req.params.idProduct;
+                        console.log(idProduct);
                         _a.label = 1;
                     case 1:
                         _a.trys.push([1, 6, , 7]);
