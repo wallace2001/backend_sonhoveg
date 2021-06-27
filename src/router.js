@@ -34,7 +34,7 @@ router.post("/auth/send_email", middlewareLogin, sendEmails.create);
 router.post("/auth/sendEmail", middlewareLogin, sendEmails.sendEmail);
 // Payments
 router.get("/auth/payment", paymentsController.index);
-router.get("/auth/payment/buy", middlewareLogin, paymentsController.buy);
+router.get("/auth/payment/buy", paymentsController.buy);
 router.post("/auth/payment/save_cart", middlewareLogin, paymentsController.saveCart);
 router.get("/auth/payment/delete_cart", middlewareLogin, paymentsController.deleteCart);
 router.get("/auth/payment/success", paymentsController.success);
