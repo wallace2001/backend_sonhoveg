@@ -69,7 +69,7 @@ class CreateUser{
                 text: "Clique no botão abaixo",
                 html: `
                     <h2>Olá ${name}, Para continuar no site é preciso que você confirme sua conta.</h2>
-                    <a href=${process.env.API_URL_PRODUCTION}/confirmaccout/id=${idUserNow.id}&token=${token}>Confirmar conta</a>
+                    <a href=${process.env.API_URL_PRODUCTION}confirmaccout/id=${idUserNow.id}&token=${token}>Confirmar conta</a>
                 `
             }
 
@@ -127,14 +127,14 @@ class CreateUser{
             const user = await knex("users").where("id", id.substring(1)).first();
 
             if(user.confirmAccount){
-                return res.redirect('http://localhost:3000/')
+                return res.redirect('https://sonhoveg.com/')
             }
             
             await knex("users").where("id", id.substring(1)).update({
                 confirmAccount: true
             });
 
-            return res.redirect('http://localhost:3000/');
+            return res.redirect('https://sonhoveg.com/');
         } catch (error) {
             console.log({ error });
         }
@@ -189,7 +189,7 @@ class CreateUser{
                 text: "Clique no botão abaixo",
                 html: `
                     <h2>Olá ${user.name}, Clique no botão para mudar sua senha.</h2>
-                    <a href=${process.env.API_URL_PRODUCTION}/change_password/${user.id}>Mudar senha</a>
+                    <a href=${process.env.API_URL_PRODUCTION}change_password/${user.id}>Mudar senha</a>
                 `
             };
 
@@ -278,7 +278,7 @@ class CreateUser{
                 html: `
                     <h2>Olá ${user.name}.</h2>
                     <h4>Clique no botão abaixo para mudar sua senha.</h4>
-                    <a href=${process.env.API_URL_PRODUCTION}/change_password/${user.id}>Mudar senha</a>
+                    <a href=${process.env.API_URL_PRODUCTION}change_password/${user.id}>Mudar senha</a>
                 `
             };
 

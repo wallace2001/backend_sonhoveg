@@ -457,20 +457,17 @@ var PaymentsController = /** @class */ (function () {
     };
     PaymentsController.prototype.updateStatus = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var status, idPayment, id, user, productUpdated, error_7;
+            var status, idPayment, productUpdated, error_7;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         status = req.body.status;
+                        console.log(status);
                         idPayment = req.params.idPayment;
-                        id = req.userId;
+                        console.log(idPayment);
                         _a.label = 1;
                     case 1:
                         _a.trys.push([1, 4, , 5]);
-                        user = connection_1.connection("users").where("id", id).first();
-                        if (!user) {
-                            return [2 /*return*/, res.send({ error: "Usuário não encontrado." })];
-                        }
                         return [4 /*yield*/, connection_1.connection("payments").where("id", idPayment).first().update({
                                 "status": status
                             })];

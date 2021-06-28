@@ -99,7 +99,7 @@ var CreateUser = /** @class */ (function () {
                             to: email,
                             subject: "Olá, Confirme seu e-mail para finalizar seu cadastro.",
                             text: "Clique no botão abaixo",
-                            html: "\n                    <h2>Ol\u00E1 " + name + ", Para continuar no site \u00E9 preciso que voc\u00EA confirme sua conta.</h2>\n                    <a href=" + process.env.API_URL_PRODUCTION + "/confirmaccout/id=" + idUserNow.id + "&token=" + token + ">Confirmar conta</a>\n                "
+                            html: "\n                    <h2>Ol\u00E1 " + name + ", Para continuar no site \u00E9 preciso que voc\u00EA confirme sua conta.</h2>\n                    <a href=" + process.env.API_URL_PRODUCTION + "confirmaccout/id=" + idUserNow.id + "&token=" + token + ">Confirmar conta</a>\n                "
                         };
                         return [4 /*yield*/, mailerCreate.send({
                                 message: message
@@ -170,14 +170,14 @@ var CreateUser = /** @class */ (function () {
                     case 2:
                         user = _b.sent();
                         if (user.confirmAccount) {
-                            return [2 /*return*/, res.redirect('http://localhost:3000/')];
+                            return [2 /*return*/, res.redirect('https://sonhoveg.com/')];
                         }
                         return [4 /*yield*/, connection_1.connection("users").where("id", id.substring(1)).update({
                                 confirmAccount: true
                             })];
                     case 3:
                         _b.sent();
-                        return [2 /*return*/, res.redirect('http://localhost:3000/')];
+                        return [2 /*return*/, res.redirect('https://sonhoveg.com/')];
                     case 4:
                         error_3 = _b.sent();
                         console.log({ error: error_3 });
@@ -256,7 +256,7 @@ var CreateUser = /** @class */ (function () {
                             to: user.email,
                             subject: "Mudar senha",
                             text: "Clique no botão abaixo",
-                            html: "\n                    <h2>Ol\u00E1 " + user.name + ", Clique no bot\u00E3o para mudar sua senha.</h2>\n                    <a href=" + process.env.API_URL_PRODUCTION + "/change_password/" + user.id + ">Mudar senha</a>\n                "
+                            html: "\n                    <h2>Ol\u00E1 " + user.name + ", Clique no bot\u00E3o para mudar sua senha.</h2>\n                    <a href=" + process.env.API_URL_PRODUCTION + "change_password/" + user.id + ">Mudar senha</a>\n                "
                         };
                         return [4 /*yield*/, mailerCreate.send({
                                 message: message
@@ -354,7 +354,7 @@ var CreateUser = /** @class */ (function () {
                             to: user.email,
                             subject: "Mudar senha",
                             text: "Clique no botão abaixo",
-                            html: "\n                    <h2>Ol\u00E1 " + user.name + ".</h2>\n                    <h4>Clique no bot\u00E3o abaixo para mudar sua senha.</h4>\n                    <a href=" + process.env.API_URL_PRODUCTION + "/change_password/" + user.id + ">Mudar senha</a>\n                "
+                            html: "\n                    <h2>Ol\u00E1 " + user.name + ".</h2>\n                    <h4>Clique no bot\u00E3o abaixo para mudar sua senha.</h4>\n                    <a href=" + process.env.API_URL_PRODUCTION + "change_password/" + user.id + ">Mudar senha</a>\n                "
                         };
                         return [4 /*yield*/, mailerCreate.send({
                                 message: message

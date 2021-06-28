@@ -329,15 +329,10 @@ class PaymentsController{
         const {
             status
         } = req.body;
+        console.log(status);
         const { idPayment } = req.params;
-        const id: string = req.userId;
+        console.log(idPayment);
         try {
-
-            const user = knex("users").where("id", id).first();
-
-            if(!user){
-                return res.send({ error: "Usuário não encontrado." });
-            }
 
             await knex("payments").where("id", idPayment).first().update({
                 "status": status
