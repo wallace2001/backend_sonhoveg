@@ -324,6 +324,33 @@ class PaymentsController{
             return res.send({ error });
         }
     }
+
+    async updateStatus(req: PropsRequest, res: Response){
+        const {
+            status
+        } = req.body;
+        const { idPayment } = req.params;
+        const id: string = req.userId;
+        try {
+
+            const user = knex("user").where("id", id).first();
+
+            if(!user){
+                return res.send({ error: "Usuário não encontrado." });
+            }
+
+            await knex("payments").where("id", idPayment).first().update({
+                "status": status
+            });
+
+            const productUpdated = await knex("payments").where("id", idPayment).first();
+
+            io.emit("updateStatusProduct", productUpdated);
+            return res.send({message: "Atualizado com sucesso."});
+        } catch (error) {
+            return res.send({error});
+        }
+    }
 }
 
 export { PaymentsController };
