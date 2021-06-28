@@ -40,7 +40,7 @@ router.get("/auth/payment/success", paymentsController.success);
 router.get("/auth/payment/cancel", paymentsController.cancel);
 router.get("/auth/payment/request", middlewareLogin, paymentsController.payments);
 router.get("/auth/payment/userpayments", middlewareLogin, paymentsController.userPayment);
-router.patch("/auth/payment/update_status", middlewareLogin, paymentsController.updateStatus);
+router.patch("/auth/payment/update_status/:idPayment", middlewareLogin, paymentsController.updateStatus);
 
 // Product
 router.post("/auth/createProduct", middlewareLogin, upload.single('file'), productController.create);
