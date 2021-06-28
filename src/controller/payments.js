@@ -467,7 +467,7 @@ var PaymentsController = /** @class */ (function () {
                         _a.label = 1;
                     case 1:
                         _a.trys.push([1, 4, , 5]);
-                        user = connection_1.connection("user").where("id", id).first();
+                        user = connection_1.connection("users").where("id", id).first();
                         if (!user) {
                             return [2 /*return*/, res.send({ error: "Usuário não encontrado." })];
                         }

@@ -333,7 +333,7 @@ class PaymentsController{
         const id: string = req.userId;
         try {
 
-            const user = knex("user").where("id", id).first();
+            const user = knex("users").where("id", id).first();
 
             if(!user){
                 return res.send({ error: "Usuário não encontrado." });
