@@ -211,8 +211,8 @@ var PaymentsController = /** @class */ (function () {
                                 "payment_method": "paypal"
                             },
                             "redirect_urls": {
-                                "return_url": process.env.API_URL_PRODUCTION + "/auth/payment/success?id=" + id,
-                                "cancel_url": process.env.API_URL_PRODUCTION + "/auth/payment/cancel"
+                                "return_url": process.env.API_URL_PRODUCTION + "auth/payment/success?id=" + id,
+                                "cancel_url": process.env.API_URL_PRODUCTION + "auth/payment/cancel"
                             },
                             "transactions": [{
                                     "item_list": {
